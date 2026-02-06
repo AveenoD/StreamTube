@@ -60,7 +60,54 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 const toggleCommentLike = asyncHandler(async (req, res) => {
     const {commentId} = req.params
     //TODO: toggle like on comment
+    if(!isValidObjectId(commentId))
+    {
+        throw new ApiError(400,"Invalid comment ID")
+    }
 
+    const comment = await Comment.findById(commentId)
+    if(!comment)
+    {
+        throw new ApiError(404, "Comment not found")
+    }
+
+    const existingLike = await Like.findOne({
+        comment: commentId,
+        likedBy: req.user._id
+    });
+
+    let isLiked;
+    let actionMessage;
+
+    if(existingLike)
+    {
+        await Like.deleteOne({_id: existingLike._id})
+        isLiked = false
+        actionMessage = "Comment unliked successfully"
+    }
+    else{
+        await Like.create({
+            comment: commentId,
+            likedBy: req.user._id
+        })
+        isLiked = true
+        actionMessage = "Comment liked successfully" 
+    }
+
+    const totalLikes = await Like.countDocument({comment: commentId})
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                liked: isLiked,
+                totalLikes,
+                commentId
+            }, actionMessage
+        )
+    )
 })
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
