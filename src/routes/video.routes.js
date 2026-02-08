@@ -5,11 +5,9 @@ import {
     getVideoById,
     updateVideo,
     deleteVideo,
-    togglePublishStatus,
-    getChannelVideos,
-    getChannelStats
-} from "../controllers/video.controller.js"
-import { authMiddleware } from "../middlewares/auth.middleware.js"
+    togglePublishStatus
+} from "../controllers/video.controllers.js"
+import  {verifyJWT as authMiddleware}  from "../middlewares/auth.middleware.js"
 import { upload } from "../middlewares/multer.middleware.js"
 
 const router = Router()
@@ -24,22 +22,10 @@ router.get(
     getAllVideos
 )
 
-// Get video by ID
+// Get video by ID (optional authentication)
 router.get(
     "/:videoId",
     getVideoById
-)
-
-// Get channel videos
-router.get(
-    "/channel/videos/:channelId",
-    getChannelVideos
-)
-
-// Get channel stats
-router.get(
-    "/channel/stats/:channelId",
-    getChannelStats
 )
 
 // ============================================

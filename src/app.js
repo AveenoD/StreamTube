@@ -21,6 +21,9 @@ app.use(cookieParser());
 import userRoutes from './routes/user.routes.js';
 app.use('/api/v1/users', userRoutes);
 
+import videoRoutes from './routes/video.routes.js';
+app.use('/api/v1/videos', videoRoutes);
+
 // Global error handler
 app.use((err, req, res, next) => {
     console.error('❌ Error:', err);
