@@ -8,6 +8,7 @@ import {
     deletePlaylist,
     updatePlaylist
 } from "../controllers/playlist.controller.js"
+
 import { authMiddleware } from "../middlewares/auth.middleware.js"
 
 const router = Router()

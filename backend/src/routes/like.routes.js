@@ -4,21 +4,23 @@ import {
     toggleCommentLike,
     toggleTweetLike,
     getLikedVideos
-} from "../controllers/like.controller.js"
-import { authMiddleware } from "../middlewares/auth.middleware.js"
+} from "../controllers/like.controllers.js"
+
+import { verifyJWT } from "../middlewares/auth.middleware.js" // Use verifyJWT, not authMiddleware
 
 const router = Router()
 
 // Toggle like on video
-router.post("/toggle/video/:videoId", authMiddleware, toggleVideoLike)
+router.post("/toggle/video/:videoId", verifyJWT, toggleVideoLike)
 
 // Toggle like on comment
-router.post("/toggle/comment/:commentId", authMiddleware, toggleCommentLike)
+router.post("/toggle/comment/:commentId", verifyJWT, toggleCommentLike)
 
 // Toggle like on tweet
-router.post("/toggle/tweet/:tweetId", authMiddleware, toggleTweetLike)
+router.post("/toggle/tweet/:tweetId", verifyJWT, toggleTweetLike)
 
-// Get all liked videos by user
-router.get("/videos/:userId", getLikedVideos)
+// ✅ FIX: Remove :userId param - use authenticated user from JWT
+// This route should be at /api/v1/likes/videos (without :userId)
+router.get("/videos", verifyJWT, getLikedVideos) // Removed :userId
 
 export default router

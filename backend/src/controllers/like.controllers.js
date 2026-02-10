@@ -1,8 +1,8 @@
 import mongoose,{isValidObjectId} from "mongoose"
-import {Like} from "../models/like.model.js"
+import {Like} from "../models/like.models.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
-import {asyncHandler} from "../utils/asyncHandler.js"
+import asyncHandler from "../utils/asyncHandler.js"
 import {Tweet} from "../models/tweet.models.js"
 import { Video } from "../models/video.models.js" 
 import { Comment } from "../models/comment.models.js" 
@@ -166,58 +166,101 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 )
 
 const getLikedVideos = asyncHandler(async (req, res) => {
-    //TODO: get all liked videos
-    const {userId} = req.params
-    if(!userId)
-    {
-        throw new ApiError(400, "User ID is required")
-    }
+    const { page = 1, limit = 12 } = req.query;
+    
+    const pageNum = parseInt(page, 10);
+    const limitNum = Math.max(1, Math.min(parseInt(limit, 10), 50));
+    const skip = (pageNum - 1) * limitNum;
 
-    const likedVideos = Like.aggregate([
+    // ✅ Use authenticated user's ID from JWT token
+    const userId = req.user._id;
+
+    const aggregationResult = await Like.aggregate([
         {
-            $match:{
-                likedBy: userId,
-                video: {$exists: true, $ne: null}
+            $match: {
+                likedBy: new mongoose.Types.ObjectId(userId),
+                video: { $exists: true, $ne: null }
             }
         },
         {
-            $sort:{
-                createdAt: -1
-            }
-        },
-        {
-            $lookup:{
+            $lookup: {
                 from: "videos",
                 localField: "video",
                 foreignField: "_id",
                 as: "videoDetails"
             }
         },
+        { $unwind: "$videoDetails" },
         {
-            $unwind: "$videoDetails"
+            $match: {
+                "videoDetails.isPublished": true
+            }
         },
         {
-            $project:{
+            $lookup: {
+                from: "users",
+                localField: "videoDetails.owner",
+                foreignField: "_id",
+                as: "ownerDetails"
+            }
+        },
+        { $unwind: "$ownerDetails" },
+        {
+            $project: {
                 _id: "$videoDetails._id",
-                title: "$videoDetails.title",       
+                title: "$videoDetails.title",
                 description: "$videoDetails.description",
-                url: "$videoDetails.url",
+                videoFile: "$videoDetails.videoFile",
                 thumbnail: "$videoDetails.thumbnail",
+                duration: "$videoDetails.duration",
+                viewsCount: "$videoDetails.viewsCount",
+                isPublished: "$videoDetails.isPublished",
                 createdAt: "$videoDetails.createdAt",
+                updatedAt: "$videoDetails.updatedAt",
+                owner: {
+                    _id: "$ownerDetails._id",
+                    username: "$ownerDetails.username",
+                    fullName: "$ownerDetails.fullName",
+                    avatar: "$ownerDetails.avatar"
+                }
+            }
+        },
+        {
+            $facet: {
+                videos: [
+                    { $skip: skip },
+                    { $limit: limitNum }
+                ],
+                totalCount: [
+                    { $count: "count" }
+                ]
             }
         }
-    ])
+    ]);
 
-    return res
-        .status(200)
-        .json(
-            new ApiResponse(
-                200,
-                likedVideos,
-                "Liked videos fetched successfully"
-            )
+    const videos = aggregationResult[0].videos;
+    const total = aggregationResult[0].totalCount.length > 0 
+        ? aggregationResult[0].totalCount[0].count 
+        : 0;
+
+    const totalPages = Math.ceil(total / limitNum);
+    const hasMore = pageNum < totalPages;
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {
+                videos,
+                totalLiked: total,
+                page: pageNum,
+                limit: limitNum,
+                totalPages,
+                hasMore
+            },
+            "Liked videos fetched successfully"
         )
-})
+    );
+});
 
 export {
     toggleCommentLike,

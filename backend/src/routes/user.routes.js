@@ -1,8 +1,9 @@
 import {Router} from "express";
-import {registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateUserAvatar, updateUserCoverImage, getUserChannelDetails, getWatchHistory} from "../controllers/user.controllers.js";
+import {registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateUserAvatar, updateUserCoverImage, getUserChannelDetails, getWatchHistory,getUploadedVideos} from "../controllers/user.controllers.js";
+import {getLikedVideos} from "../controllers/like.controllers.js"
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-
+import { getUserPlaylists } from "../controllers/playlist.controller.js";
 const router = Router();
 
 router.route('/register').post(
@@ -30,5 +31,7 @@ router.route("/profile/coverImage").patch(verifyJWT, upload.single("coverImage")
 router.route("/channel/:username").get(verifyJWT, getUserChannelDetails)
 
 router.route("/watch-history").get(verifyJWT, getWatchHistory)
-
+router.route("/liked-videos").get(verifyJWT, getLikedVideos);
+router.route("/uploaded-videos").get(verifyJWT, getUploadedVideos);
+router.route("/playlists").get(verifyJWT, getUserPlaylists);
 export default router;

@@ -4,6 +4,7 @@ import { User } from "../models/user.models.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Options } from "../utils/Options.js";
+import { Video } from "../models/video.models.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 const generateAccessTokenAndRefreshToken = async (userID) =>{
@@ -234,9 +235,15 @@ const changeCurrentPassword = asyncHandler(async (req, res) =>{
 })
 
 const getCurrentUser = asyncHandler(async (req, res) => {
-     return res.status(200)
-     .json(new ApiResponse(200, "Current User fetched successfully"))
-})
+    // Return the authenticated user from req.user
+    return res.status(200).json(
+        new ApiResponse(
+            200, 
+            req.user, 
+            "Current User fetched successfully"
+        )
+    );
+});
 
 const updateAccountDetails = asyncHandler(async(req, res) =>{
     const {fullName, email} = req.body
@@ -454,6 +461,138 @@ const getWatchHistory = asyncHandler(async(req, res) =>{
         )
     )
 })
+const getUploadedVideos = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 12, sortBy = "createdAt", sortType = "desc" } = req.query;
+
+    const pageNum = parseInt(page, 10);
+    const limitNum = Math.max(1, Math.min(parseInt(limit, 10), 50));
+    const skip = (pageNum - 1) * limitNum;
+
+    // Validate sort parameters
+    const validSortFields = ["createdAt", "viewsCount", "duration", "title"];
+    const sortField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
+    const sortDirection = sortType === "asc" ? 1 : -1;
+
+    // Get user's uploaded videos
+    const aggregationResult = await Video.aggregate([
+        {
+            $match: {
+                owner: new mongoose.Types.ObjectId(req.user._id),
+                isPublished: true
+            }
+        },
+        {
+            $sort: { [sortField]: sortDirection }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "ownerDetails"
+            }
+        },
+        { $unwind: "$ownerDetails" },
+        {
+            $lookup: {
+                from: "likes",
+                let: { videoId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$video", "$$videoId"] }
+                        }
+                    },
+                    { $count: "count" }
+                ],
+                as: "likeCount"
+            }
+        },
+        {
+            $unwind: {
+                path: "$likeCount",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $lookup: {
+                from: "comments",
+                let: { videoId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$video", "$$videoId"] }
+                        }
+                    },
+                    { $count: "count" }
+                ],
+                as: "commentCount"
+            }
+        },
+        {
+            $unwind: {
+                path: "$commentCount",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                title: 1,
+                description: 1,
+                videoFile: 1,
+                thumbnail: 1,
+                duration: 1,
+                viewsCount: 1,
+                isPublished: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                owner: {
+                    _id: "$ownerDetails._id",
+                    username: "$ownerDetails.username",
+                    fullName: "$ownerDetails.fullName",
+                    avatar: "$ownerDetails.avatar"
+                },
+                likeCount: { $ifNull: ["$likeCount.count", 0] },
+                commentCount: { $ifNull: ["$commentCount.count", 0] }
+            }
+        },
+        {
+            $facet: {
+                videos: [
+                    { $skip: skip },
+                    { $limit: limitNum }
+                ],
+                totalCount: [
+                    { $count: "count" }
+                ]
+            }
+        }
+    ]);
+
+    const videos = aggregationResult[0].videos;
+    const total = aggregationResult[0].totalCount.length > 0 
+        ? aggregationResult[0].totalCount[0].count 
+        : 0;
+
+    const totalPages = Math.ceil(total / limitNum);
+    const hasMore = pageNum < totalPages;
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {
+                videos,
+                totalVideos: total,
+                page: pageNum,
+                limit: limitNum,
+                totalPages,
+                hasMore
+            },
+            "Uploaded videos fetched successfully"
+        )
+    );
+});
 export { 
     registerUser,
     loginUser,
@@ -465,5 +604,6 @@ export {
     updateUserAvatar,
     updateUserCoverImage,
     getUserChannelDetails,
-    getWatchHistory
+    getWatchHistory,
+    getUploadedVideos
 };
