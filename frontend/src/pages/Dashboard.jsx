@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import Sidebar from '../components/layout/Sidebar';
 import VideoSection from '../components/dashboard/VideoSection';
-import WatchHistorySection from '../components/dashboard/WatchHistorySection';
+import WatchHistorySection from '../components/Dashboard/WatchHistorySection';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
