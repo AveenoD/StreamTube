@@ -43,6 +43,9 @@ app.use('/api/v1/videos', videoRoutes);
 import likeRoutes from './routes/like.routes.js'; // Changed from video.routes.js
 app.use('/api/v1/likes', likeRoutes);
 
+import subscriptionRoutes from './routes/susbcription.routes.js';
+app.use('/api/v1/subscriptions', subscriptionRoutes);
+
 
 
 

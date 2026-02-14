@@ -4,12 +4,12 @@ import {
     getUserChannelSubscribers,
     getSubscribedChannels
 } from "../controllers/subscription.controller.js"
-import { authMiddleware } from "../middlewares/auth.middleware.js"
+import { verifyJWT } from "../middlewares/auth.middleware.js"
 
 const router = Router()
 
 // Toggle subscription (requires auth)
-router.post("/subscribe/:channelId", authMiddleware, toggleSubscription)
+router.post("/subscribe/:channelId", verifyJWT, toggleSubscription)
 
 // Get channel subscribers (public)
 router.get("/channel/:channelId/subscribers", getUserChannelSubscribers)
