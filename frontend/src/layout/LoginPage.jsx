@@ -11,7 +11,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const toast = useToast();
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    
     const baseURL = 'http://localhost:5000/api/v1/users'
     const handleLogin = async (e) => {
         e.preventDefault()
@@ -31,7 +31,7 @@ export default function LoginPage() {
             localStorage.setItem("refreshToken", refreshToken);
             localStorage.setItem("user", JSON.stringify(user));
             toast.success(`Welcome back, ${user.fullName || user.username}! 👋`);
-            navigate('/dashboard');
+            navigate('/');
         } catch (error) {
             if (error.response) {
                 toast.error(error.response?.data?.message || "Login failed");

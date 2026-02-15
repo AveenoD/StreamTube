@@ -89,7 +89,7 @@ export default function RegisterPage() {
 
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
-      navigate("/dashboard");
+      navigate("/");
 
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed. Please try again.");

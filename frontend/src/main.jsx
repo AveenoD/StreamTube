@@ -5,9 +5,11 @@ import './index.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import LoginPage from './layout/LoginPage';
 import RegisterPage from './layout/RegisterPage';
-import Dashboard from './pages/Dashboard';
+import HomePage from './pages/HomePage.jsx';
 import { ToastProvider } from './toaster/ToastContext';
 import { ToastContainer  } from './toaster/ToastContainer';
+import VideoPage from './pages/VideoPage.jsx';
+
 const router = createBrowserRouter([
   {
     path:'/login',
@@ -22,8 +24,10 @@ const router = createBrowserRouter([
     element: <App />,
     children:[
       {
-        path:'dashboard',
-        element: <Dashboard />
+        index: true,  element: <HomePage />
+      },
+      { 
+        path: 'video/:id', element: <VideoPage /> 
       }
     ]
   }
