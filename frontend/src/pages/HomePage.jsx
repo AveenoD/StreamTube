@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import {useToast} from '../toaster/UseToast.js'
-import VideoCard, { VideoCardSkeleton } from "../components/VideoCard";
+import VideoCard, {VideoCardSkeleton} from "../components/Videocard.jsx";
 
 const BASE_URL = "http://localhost:5000/api/v1";
 

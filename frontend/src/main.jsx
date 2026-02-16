@@ -27,17 +27,17 @@ const router = createBrowserRouter([
         index: true,  element: <HomePage />
       },
       { 
-        path: 'video/:id', element: <VideoPage /> 
+         path: 'video/:videoId', element: <VideoPage /> 
       }
     ]
   }
 ]);
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
+  
    <ToastProvider>              
       <RouterProvider router={router} />
       <ToastContainer />          
     </ToastProvider>
-  </React.StrictMode>
+  
 );

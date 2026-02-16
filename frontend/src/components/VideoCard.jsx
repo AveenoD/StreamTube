@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // ── Helpers ───────────────────────────────────────────────────
 
@@ -41,7 +41,7 @@ function timeAgo(date) {
   return "Just now";
 }
 
-// ── VideoCard Skeleton ─────────────────────────────────────────
+// ── VideoCard Skeleton ────────────────────────────────────────
 export function VideoCardSkeleton() {
   return (
     <div className="flex flex-col gap-3 animate-pulse">
@@ -58,27 +58,32 @@ export function VideoCardSkeleton() {
   );
 }
 
-// ── VideoCard ──────────────────────────────────────────────────
+// ── VideoCard ─────────────────────────────────────────────────
 export default function VideoCard({ video }) {
+  const navigate = useNavigate();
+
   if (!video) return null;
 
   const {
     _id,
-    title       = "Untitled Video",
+    title     = "Untitled Video",
     thumbnail,
     duration,
     views,
     createdAt,
-    owner       = {},
+    owner     = {},
   } = video;
 
   return (
-    <Link
-      to={`/video/${_id}`}
-      className="flex flex-col gap-3 group cursor-pointer"
-    >
-      {/* Thumbnail */}
-      <div className="relative w-full aspect-video overflow-hidden rounded-2xl bg-gray-100">
+    // ✅ div as wrapper — no more nested <a> error
+    <div className="flex flex-col gap-3 group cursor-pointer">
+
+      {/* ── Thumbnail — clicks to video ───────────────── */}
+      <div
+        onClick={() => navigate(`/video/${_id}`)}
+        className="relative w-full aspect-video overflow-hidden
+                   rounded-2xl bg-gray-100 cursor-pointer"
+      >
         {thumbnail ? (
           <img
             src={thumbnail}
@@ -88,6 +93,7 @@ export default function VideoCard({ video }) {
             loading="lazy"
           />
         ) : (
+          // Fallback when no thumbnail
           <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300
                           flex items-center justify-center">
             <svg className="w-12 h-12 text-gray-400" fill="none"
@@ -111,24 +117,26 @@ export default function VideoCard({ video }) {
         )}
       </div>
 
-      {/* Info row */}
+      {/* ── Info row ──────────────────────────────────── */}
       <div className="flex gap-3">
-        {/* Channel avatar */}
+
+        {/* Channel avatar — ✅ standalone Link, no parent <a> */}
         <Link
           to={`/channel/${owner._id}`}
-          onClick={(e) => e.stopPropagation()}
           className="flex-shrink-0 mt-0.5"
         >
-          <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-transparent
+          <div className="w-9 h-9 rounded-full overflow-hidden
+                          ring-2 ring-transparent
                           hover:ring-rose-200 transition-all duration-200">
             {owner.avatar ? (
               <img
                 src={owner.avatar}
-                alt={owner.fullName}
+                alt={owner.fullName || owner.username}
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-purple-500
+              <div className="w-full h-full bg-gradient-to-br
+                              from-indigo-400 to-purple-500
                               flex items-center justify-center">
                 <span className="text-white text-xs font-bold">
                   {owner.fullName?.charAt(0)?.toUpperCase() ||
@@ -141,17 +149,20 @@ export default function VideoCard({ video }) {
 
         {/* Text info */}
         <div className="flex-1 min-w-0">
-          {/* Title */}
-          <h3 className="text-sm font-semibold text-gray-900 leading-snug
-                         line-clamp-2 group-hover:text-rose-600
-                         transition-colors duration-150">
+
+          {/* Title — clicks to video */}
+          <h3
+            onClick={() => navigate(`/video/${_id}`)}
+            className="text-sm font-semibold text-gray-900 leading-snug
+                       line-clamp-2 group-hover:text-rose-600
+                       transition-colors duration-150 cursor-pointer"
+          >
             {title}
           </h3>
 
-          {/* Channel name */}
+          {/* Channel name — ✅ standalone Link, no parent <a> */}
           <Link
             to={`/channel/${owner._id}`}
-            onClick={(e) => e.stopPropagation()}
             className="text-xs text-gray-500 font-medium mt-1 block
                        hover:text-gray-800 transition-colors duration-150 truncate"
           >
@@ -161,12 +172,12 @@ export default function VideoCard({ video }) {
           {/* Views + time */}
           <p className="text-xs text-gray-400 mt-0.5">
             {formatViews(views)}
-            {createdAt && (
-              <span> · {timeAgo(createdAt)}</span>
-            )}
+            {createdAt && <span> · {timeAgo(createdAt)}</span>}
           </p>
+
         </div>
       </div>
-    </Link>
+
+    </div>
   );
 }

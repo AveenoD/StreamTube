@@ -46,6 +46,8 @@ app.use('/api/v1/likes', likeRoutes);
 import subscriptionRoutes from './routes/susbcription.routes.js';
 app.use('/api/v1/subscriptions', subscriptionRoutes);
 
+import commentRoutes from './routes/comment.routes.js';
+app.use('/api/v1/comments',commentRoutes)
 
 
 

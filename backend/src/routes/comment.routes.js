@@ -4,8 +4,8 @@ import {
     addComment,
     updateComment,
     deleteComment
-} from "../controllers/comment.controller.js"
-import { authMiddleware } from "../middlewares/auth.middleware.js"
+} from "../controllers/comment.controllers.js"
+import  {verifyJWT}  from "../middlewares/auth.middleware.js"
 
 const router = Router()
 
@@ -13,12 +13,12 @@ const router = Router()
 router.get("/video/:videoId", getVideoComments)
 
 // Add a comment to a video
-router.post("/video/:videoId", authMiddleware, addComment)
+router.post("/video/:videoId", verifyJWT, addComment)
 
 // Update a comment
-router.patch("/:commentId", authMiddleware, updateComment)
+router.patch("/:commentId", verifyJWT, updateComment)
 
 // Delete a comment
-router.delete("/:commentId", authMiddleware, deleteComment)
+router.delete("/:commentId", verifyJWT, deleteComment)
 
 export default router
