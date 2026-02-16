@@ -148,7 +148,9 @@ useEffect(() => {
     .then((res) => {
       // ✅ Guard — only set if response exists
       if (!res) return;
-      setChannels(res.data.data.subscribedChannels || []);
+      const subscribedChannels = res.data.data.subscribedChannels || [];
+  const flatChannels = subscribedChannels.map(item => item.channel);
+      setChannels(flatChannels);
     })
     .catch((err) => {
       console.error("Sidebar error:", err.response?.data || err.message);

@@ -7,7 +7,7 @@ import {
     deleteVideo,
     togglePublishStatus
 } from "../controllers/video.controllers.js"
-import  {verifyJWT as authMiddleware}  from "../middlewares/auth.middleware.js"
+import  {verifyJWT as authMiddleware, optionalVerifyJWT}  from "../middlewares/auth.middleware.js"
 import { upload } from "../middlewares/multer.middleware.js"
 
 const router = Router()
@@ -25,6 +25,7 @@ router.get(
 // Get video by ID (optional authentication)
 router.get(
     "/:videoId",
+    optionalVerifyJWT,
     getVideoById
 )
 
