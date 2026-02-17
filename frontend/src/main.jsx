@@ -7,45 +7,59 @@ import LoginPage from './layout/LoginPage';
 import RegisterPage from './layout/RegisterPage';
 import HomePage from './pages/HomePage.jsx';
 import { ToastProvider } from './toaster/ToastContext';
-import { ToastContainer  } from './toaster/ToastContainer';
+import { ToastContainer } from './toaster/ToastContainer';
 import VideoPage from './pages/VideoPage.jsx';
 import UploadPage from './pages/UploadPage';
 import ChannelPage from './pages/ChannelPage.jsx'
+import ProfilePage from './pages/ProfilePage.jsx';
+import HistoryPage     from './pages/HistoryPage.jsx';
+import LikedVideosPage from './pages/LikedVideosPage';
 const router = createBrowserRouter([
   {
-    path:'/login',
+    path: '/login',
     element: <LoginPage />
   },
   {
-    path:'/register',
+    path: '/register',
     element: <RegisterPage />
   },
   {
-    path:'/',
+    path: '/',
     element: <App />,
-    children:[
+    children: [
       {
-        index: true,  element: <HomePage />
+        index: true, element: <HomePage />
       },
-      { 
-         path: 'video/:videoId', element: <VideoPage /> 
+      {
+        path: 'video/:videoId', element: <VideoPage />
       },
-      { 
-        path: 'upload', element: <UploadPage /> 
+      {
+        path: 'upload', element: <UploadPage />
       },
-      { 
+      {
         path: 'channel/:userId', element: <ChannelPage />
-      }
+      },
+      {
+        path: 'profile', element: <ProfilePage />
+      },
+      {
+        path: 'history', element: <HistoryPage />
+
+      },
+      {
+        path: 'liked', element: <LikedVideosPage />
+
+      },
 
     ]
   }
 ]);
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  
-   <ToastProvider>              
-      <RouterProvider router={router} />
-      <ToastContainer />          
-    </ToastProvider>
-  
+
+  <ToastProvider>
+    <RouterProvider router={router} />
+    <ToastContainer />
+  </ToastProvider>
+
 );

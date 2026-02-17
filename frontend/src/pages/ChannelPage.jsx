@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useToast } from "../toaster/UseToast.js";
-import VideoCard, { VideoCardSkeleton } from "../components/Videocard";
+import VideoCard, { VideoCardSkeleton } from "../components/VideoCard";
 import { Bell, BellOff, PlaySquare, Users, Eye } from "lucide-react";
 
 const BASE_URL = "http://localhost:5000/api/v1";
