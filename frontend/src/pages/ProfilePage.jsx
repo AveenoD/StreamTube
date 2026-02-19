@@ -21,10 +21,12 @@ export default function ProfilePage() {
   const toast    = useToast();
   const navigate = useNavigate();
 
-  // ── Your logic (unchanged) ───────────────────────────
-  const [user, setUser]       = useState(null);
-  const [videos, setVideos]   = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [user, setUser]             = useState(null);
+  const [videos, setVideos]         = useState([]);
+  const [loading, setLoading]       = useState(false);
+  
+  // ✅ ADD: Separate state for subscriber count (like ChannelPage)
+  const [subscribersCount, setSubscribersCount] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -37,11 +39,22 @@ export default function ProfilePage() {
     setLoading(true);
 
     axios
-      .get(`${BASE_URL}/users/current-user`, { headers })  // ✅ fixed
+      .get(`${BASE_URL}/users/current-user`, { headers })
       .then((res) => {
         const currentUser = res.data.data;
         if (!currentUser || !currentUser._id) return;
+        
         setUser(currentUser);
+        
+        // ✅ FIX: Set subscribersCount from API (normalize field name)
+        const count = 
+          currentUser.subscribersCount ?? 
+          currentUser.subscriberCount ?? 
+          currentUser.totalSubscribers ?? 
+          currentUser._count?.subscribers ?? 
+          0;
+        setSubscribersCount(count);
+        
       })
       .catch((err) => {
         toast.error("Failed to load profile");
@@ -61,7 +74,15 @@ export default function ProfilePage() {
         const response = await axios.get(
           `${BASE_URL}/videos?userId=${user._id}`
         );
-        setVideos(response.data.data.videos || []);
+        
+        // ✅ Normalize views field for videos
+        const fetchedVideos = response.data.data.videos || [];
+        const normalizedVideos = fetchedVideos.map(video => ({
+          ...video,
+          views: video.viewsCount ?? video.views ?? video.viewCount ?? 0
+        }));
+        
+        setVideos(normalizedVideos);
       } catch (error) {
         toast.error(
           error.response?.data?.message || "Unable to fetch videos"
@@ -161,7 +182,8 @@ export default function ProfilePage() {
                     <span className="flex items-center gap-1.5
                                      text-xs text-gray-500 font-medium">
                       <Users size={13} strokeWidth={2} />
-                      {formatCount(user.subscribersCount || 0)} subscribers
+                      {/* ✅ FIX: Use separate subscribersCount state (like ChannelPage) */}
+                      {formatCount(subscribersCount || 0)} subscribers
                     </span>
                     <span className="flex items-center gap-1.5
                                      text-xs text-gray-500 font-medium">
@@ -206,7 +228,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* ── Divider ────────────────────────── */}
+            {/* ── Divider ───────────────────────── */}
             <div className="border-b border-gray-200 mb-6" />
 
             {/* ── Videos section ───────────────── */}

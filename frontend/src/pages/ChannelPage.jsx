@@ -44,7 +44,15 @@ export default function ChannelPage() {
 
                 const channelData = channelRes.data.data;
                 setChannel(channelData);
-                setVideos(videosRes.data.data.videos || []);
+                
+                // ✅ FIX: Normalize views field for videos (API returns 'viewsCount')
+                const fetchedVideos = videosRes.data.data.videos || [];
+                const normalizedVideos = fetchedVideos.map(video => ({
+                    ...video,
+                    views: video.viewsCount ?? video.views ?? video.viewCount ?? 0
+                }));
+                setVideos(normalizedVideos);
+                
                 setSubscribed(channelData.isSubscribed || false);
                 setSubscribersCount(channelData.subscribersCount || 0);
             } catch (error) {

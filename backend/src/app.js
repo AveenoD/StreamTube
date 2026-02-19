@@ -49,6 +49,8 @@ app.use('/api/v1/subscriptions', subscriptionRoutes);
 import commentRoutes from './routes/comment.routes.js';
 app.use('/api/v1/comments',commentRoutes)
 
+import playlistRoutes from './routes/playlist.routes.js'
+app.use('/api/v1/playlists', playlistRoutes);
 
 
 

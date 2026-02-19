@@ -9,29 +9,29 @@ import {
     updatePlaylist
 } from "../controllers/playlist.controller.js"
 
-import { authMiddleware } from "../middlewares/auth.middleware.js"
+import { verifyJWT as authMiddleware } from "../middlewares/auth.middleware.js"
 
 const router = Router()
 
-// Create playlist (requires auth)
-router.post("/playlists", authMiddleware, createPlaylist)
+// Create playlist
+router.post("/", authMiddleware, createPlaylist)  
 
-// Get user playlists (public)
-router.get("/users/:userId/playlists", getUserPlaylists)
+// Get user playlists
+router.get("/user/:userId", getUserPlaylists)  
 
-// Get playlist by ID (public)
-router.get("/playlists/:playlistId", getPlaylistById)
+// Get playlist by ID
+router.get("/:playlistId", authMiddleware, getPlaylistById)  
 
-// Add video to playlist (requires auth)
-router.post("/playlists/:playlistId/videos/:videoId", authMiddleware, addVideoToPlaylist)
 
-// Remove video from playlist (requires auth)
-router.delete("/playlists/:playlistId/videos/:videoId", authMiddleware, removeVideoFromPlaylist)
+router.patch("/:playlistId/add", authMiddleware, addVideoToPlaylist)  
 
-// Delete playlist (requires auth)
-router.delete("/playlists/:playlistId", authMiddleware, deletePlaylist)
 
-// Update playlist (requires auth)
-router.patch("/playlists/:playlistId", authMiddleware, updatePlaylist)
+router.patch("/:playlistId/remove", authMiddleware, removeVideoFromPlaylist)  
+
+// Delete playlist
+router.delete("/:playlistId", authMiddleware, deletePlaylist)  
+
+// Update playlist
+router.patch("/:playlistId", authMiddleware, updatePlaylist) 
 
 export default router

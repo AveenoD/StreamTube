@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate }         from "react-router-dom";
 import axios                   from "axios";
 import { useToast }            from "../toaster/UseToast.js";
-import VideoCard, { VideoCardSkeleton } from "../components/Videocard";
+import VideoCard, { VideoCardSkeleton } from "../components/VideoCard";
 import { Clock, Trash2 }       from "lucide-react";
 
 const BASE_URL = "http://localhost:5000/api/v1";
@@ -28,7 +28,15 @@ export default function WatchLaterPage() {
           `${BASE_URL}/users/watch-later`,
           { headers }
         );
-        setVideos(response.data.data || []);
+        
+        // ✅ FIX: Normalize views field
+        const fetchedVideos = response.data.data || [];
+        const normalizedVideos = fetchedVideos.map(video => ({
+          ...video,
+          views: video.viewsCount ?? video.views ?? video.viewCount ?? 0
+        }));
+        
+        setVideos(normalizedVideos);
       } catch (error) {
         toast.error(
           error.response?.data?.message || "Failed to load watch later"
@@ -85,7 +93,7 @@ export default function WatchLaterPage() {
           )}
         </div>
 
-        {/* ── Loading ───────────────────────────────── */}
+        {/* ── Loading ──────────────────────────────── */}
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2
                           lg:grid-cols-3 xl:grid-cols-4 gap-5">

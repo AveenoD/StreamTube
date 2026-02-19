@@ -28,7 +28,15 @@ export default function HistoryPage() {
           `${BASE_URL}/users/watch-history`,
           { headers }
         );
-        setVideos(response.data.data || []);
+        
+        // ✅ FIX: Normalize views field
+        const fetchedVideos = response.data.data || [];
+        const normalizedVideos = fetchedVideos.map(video => ({
+          ...video,
+          views: video.viewsCount ?? video.views ?? video.viewCount ?? 0
+        }));
+        
+        setVideos(normalizedVideos);
       } catch (error) {
         toast.error(
           error.response?.data?.message || "Failed to load watch history"

@@ -6,9 +6,14 @@ import asyncHandler from "../utils/asyncHandler.js"
 
 
 const getUserPlaylists = asyncHandler(async (req, res) => {
-    // Get playlists for authenticated user
+    const { userId } = req.params;  // ✅ get from URL
+
+    if (!isValidObjectId(userId)) {
+        throw new ApiError(400, "Invalid user ID");
+    }
+
     const playlists = await Playlist.find({
-        owner: req.user._id
+        owner: userId  // ✅ use URL param
     })
     .populate('owner', 'username fullName avatar')
     .sort({ createdAt: -1 })
@@ -168,7 +173,45 @@ const deletePlaylist = asyncHandler(async (req, res) => {
     );
 }  
 );
+const updatePlaylist = asyncHandler(async (req, res) => {
+    const { playlistId } = req.params;
+    const { name, description } = req.body;  // ✅ update these fields
 
+    if (!isValidObjectId(playlistId)) {
+        throw new ApiError(400, "Invalid playlist ID");
+    }
+
+    const playlist = await Playlist.findById(playlistId);
+    if (!playlist) {
+        throw new ApiError(404, "Playlist not found");
+    }
+
+    if (!playlist.owner.equals(req.user._id)) {
+        throw new ApiError(403, "You do not have permission to modify this playlist");
+    }
+
+    // ✅ Update name/description
+    if (name?.trim()) {
+        playlist.name = name.trim();
+    }
+    if (description !== undefined) {
+        playlist.description = description.trim();
+    }
+
+    await playlist.save();
+
+    const updatedPlaylist = await Playlist.findById(playlistId)
+        .populate('owner', 'username fullName avatar')
+        .populate('videos', 'title description thumbnail duration');
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            updatedPlaylist,
+            "Playlist updated successfully"
+        )
+    );
+});
 export {
     createPlaylist,
     getUserPlaylists,
@@ -176,5 +219,6 @@ export {
     addVideoToPlaylist,
     removeVideoFromPlaylist,
     deletePlaylist,
+    updatePlaylist
     
 }
