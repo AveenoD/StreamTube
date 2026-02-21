@@ -18,6 +18,8 @@ import SettingsPage from './pages/SettingsPage.jsx';
 import WatchLaterPage from './pages/WatchLaterPage';
 import PlaylistPage from './pages/PlaylistPage.jsx';
 import PlaylistDetailPage from './pages/PlaylistDetailPage.jsx';
+import TweetsPage from './pages/TweetsPage';
+import SubscribersPage from './pages/SubscribersPage';
 const router = createBrowserRouter([
   {
     path: '/login',
@@ -66,6 +68,12 @@ const router = createBrowserRouter([
       },
       { 
         path: 'playlist/:playlistId', element: <PlaylistDetailPage />         
+      },
+      { 
+        path: 'posts', element: <TweetsPage /> 
+      },
+      { 
+        path: 'subscribers', element: <SubscribersPage /> 
       }
 
     ]

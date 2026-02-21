@@ -52,7 +52,8 @@ app.use('/api/v1/comments',commentRoutes)
 import playlistRoutes from './routes/playlist.routes.js'
 app.use('/api/v1/playlists', playlistRoutes);
 
-
+import tweetRouter from './routes/tweet.routes.js';
+app.use('/api/v1/tweets', tweetRouter);
 
 // Health check
 app.get('/health', (req, res) => {

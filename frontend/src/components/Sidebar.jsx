@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Tv2,
   Loader2,
+  MessageSquare
 } from "lucide-react";
 
 const BASE_URL = "http://localhost:5000/api/v1";
@@ -152,7 +153,7 @@ export default function Sidebar({ isOpen, onClose }) {   // ✅ named function
         const subscribedChannels = res.data.data.subscribedChannels || [];
         const flatChannels = subscribedChannels.map(item => item.channel);
         setChannels(flatChannels);
-        
+
       })
       .catch((err) => {
         toast.error("Failed to load user data");
@@ -272,6 +273,12 @@ export default function Sidebar({ isOpen, onClose }) {   // ✅ named function
               isActive={pathname === "/watchlater"}
               badge={watchLaterCount > 0 ? watchLaterCount : undefined}  // ✅ dynamic
             />
+            <NavItem
+              to="/posts"
+              icon={MessageSquare}
+              label="Posts"
+              isActive={pathname === "/posts"}
+            />
             <NavItem to="/profile" icon={PlaySquare} label="My Videos" isActive={pathname === "/profile"} />
           </div>
 
@@ -345,7 +352,7 @@ export default function Sidebar({ isOpen, onClose }) {   // ✅ named function
 
             {/* Show all link */}
             <Link
-              to="/subscriptions"
+              to="/subscribers"
               className="flex items-center gap-3 px-3 py-2 rounded-xl
                          text-sm text-indigo-500 font-semibold
                          hover:bg-indigo-50 transition-all duration-150"
