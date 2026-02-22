@@ -255,8 +255,8 @@ export default function Sidebar({ isOpen, onClose }) {   // ✅ named function
           {/* ── MAIN NAVIGATION ──────────────────────── */}
           <div className="space-y-0.5">
             <NavItem to="/" icon={Home} label="Home" isActive={pathname === "/"} />
-            <NavItem to="/explore" icon={Compass} label="Explore" isActive={pathname === "/explore"} />
-            <NavItem to="/trending" icon={Flame} label="Trending" isActive={pathname === "/trending"} />
+            <NavItem to="/commingsoon" icon={Compass} label="Explore" isActive={pathname === "/commingsoon"} />
+            <NavItem to="/commingsoon" icon={Flame} label="Trending" isActive={pathname === "/commingsoon"} />
           </div>
 
           <SectionDivider />
@@ -367,10 +367,10 @@ export default function Sidebar({ isOpen, onClose }) {   // ✅ named function
           {/* ── EXPLORE BY CATEGORY ──────────────────── */}
           <SectionDivider label="Explore" />
           <div className="space-y-0.5">
-            <NavItem to="/category/music" icon={Music2} label="Music" isActive={pathname === "/category/music"} />
-            <NavItem to="/category/gaming" icon={Gamepad2} label="Gaming" isActive={pathname === "/category/gaming"} />
-            <NavItem to="/category/news" icon={Newspaper} label="News" isActive={pathname === "/category/news"} />
-            <NavItem to="/category/sports" icon={Trophy} label="Sports" isActive={pathname === "/category/sports"} />
+            <NavItem to="/commingsoon" icon={Music2} label="Music" isActive={pathname === "/category/music"} />
+            <NavItem to="/commingsoon" icon={Gamepad2} label="Gaming" isActive={pathname === "/category/gaming"} />
+            <NavItem to="/commingsoon" icon={Newspaper} label="News" isActive={pathname === "/category/news"} />
+            <NavItem to="/commingsoon" icon={Trophy} label="Sports" isActive={pathname === "/category/sports"} />
           </div>
 
           <SectionDivider />

@@ -88,7 +88,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
         actionMessage = "Comment liked successfully"
     }
 
-    const totalLikes = await Like.countDocument({ comment: commentId })
+    const totalLikes = await Like.countDocuments({ comment: commentId })
 
     return res
         .status(200)
@@ -106,13 +106,12 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
     const { tweetId } = req.params
-    //TODO: toggle like on tweet
+    
     if (!isValidObjectId(tweetId)) {
         throw new ApiError(400, "Invalid Tweet ID")
     }
 
     const tweet = await Tweet.findById(tweetId)
-
     if (!tweet) {
         throw new ApiError(404, "Tweet not found")
     }
@@ -139,22 +138,23 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
         actionMessage = "Tweet liked successfully"
     }
 
-    const totalLikes = await Like.countDocument({ tweet: tweetId });
+    // ✅ FIX: countDocuments (not countDocument)
+    const totalLikes = await Like.countDocuments({ tweet: tweetId });
 
     return res
         .status(200)
         .json(
             new ApiResponse(
-                200, {
-                liked: isLiked,
-                totalLikes,
-                tweetId
-            }, actionMessage)
+                200, 
+                {
+                    liked: isLiked,
+                    totalLikes,
+                    tweetId
+                }, 
+                actionMessage
+            )
         )
-
-
-}
-)
+})
 
 const getLikedVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 12 } = req.query;

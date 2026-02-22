@@ -7,7 +7,7 @@ import {
   ThumbsUp, Share2, Bell, BellOff,
   Send, Trash2, ChevronDown, ChevronUp,
   Eye, Calendar, MessageCircle, Clock,
-  Plus, X, ListVideo
+  Plus, X, ListVideo, Heart
 } from "lucide-react";
 
 const BASE_URL = "http://localhost:5000/api/v1";
@@ -43,7 +43,11 @@ function formatDate(date) {
   });
 }
 
-function CommentItem({ comment, currentUserId, onDelete }) {
+// ✅ FIX: CommentItem with Like Button
+function CommentItem({ comment, currentUserId, onDelete, onLike }) {
+  const isLiked = comment.isLiked || false;
+  const likeCount = comment.likeCount || 0;
+
   return (
     <div className="flex gap-3 group">
       <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
@@ -72,6 +76,23 @@ function CommentItem({ comment, currentUserId, onDelete }) {
         <p className="text-sm text-gray-700 leading-relaxed break-words">
           {comment.content}
         </p>
+
+        {/* ✅ Like button for comments */}
+        <div className="flex items-center gap-4 mt-2">
+          <button
+            onClick={() => onLike?.(comment._id)}
+            className={`flex items-center gap-1 text-xs transition-colors
+                        ${isLiked ? "text-rose-500" : "text-gray-400 hover:text-rose-500"}`}
+          >
+            <Heart 
+              size={14} 
+              strokeWidth={2}
+              className={isLiked ? "fill-rose-500" : ""} 
+            />
+            {likeCount > 0 && <span className="font-medium">{likeCount}</span>}
+            <span>{isLiked ? "Liked" : "Like"}</span>
+          </button>
+        </div>
       </div>
 
       {currentUserId && comment.owner?._id === currentUserId && (
@@ -169,8 +190,17 @@ export default function VideoPage() {
     async function fetchComments() {
       setCommentsLoading(true);
       try {
-        const response = await axios.get(`${BASE_URL}/comments/video/${videoId}`);
-        setComments(response.data.data || []);
+        const response = await axios.get(`${BASE_URL}/comments/video/${videoId}`, { headers });
+        
+        // ✅ Normalize comments with like info (fallback if API doesn't return it)
+        const fetchedComments = response.data.data || [];
+        const normalizedComments = fetchedComments.map(c => ({
+          ...c,
+          isLiked: c.isLiked || false,
+          likeCount: c.likeCount || 0
+        }));
+        
+        setComments(normalizedComments);
       } catch (error) {
         toast.error("Failed to load comments");
       } finally {
@@ -201,6 +231,63 @@ export default function VideoPage() {
     } catch (error) {
       setLiked(wasLiked);
       setLikeCount(prevCount);
+      toast.error("Failed to update like");
+    }
+  }
+
+  // ✅ ADD: Handle like for comments
+  async function handleLikeComment(commentId) {
+    if (!token) {
+      toast.warning("Please login to like comments");
+      navigate("/login");
+      return;
+    }
+
+    // ✅ Optimistic update
+    setComments(prev => prev.map(c => {
+      if (c._id === commentId) {
+        const wasLiked = c.isLiked || false;
+        return {
+          ...c,
+          isLiked: !wasLiked,
+          likeCount: wasLiked ? (c.likeCount - 1) : (c.likeCount + 1)
+        };
+      }
+      return c;
+    }));
+
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/likes/toggle/comment/${commentId}`,
+        {},
+        { headers }
+      );
+      
+      // ✅ Sync with server response
+      setComments(prev => prev.map(c => {
+        if (c._id === commentId) {
+          return {
+            ...c,
+            isLiked: response.data.data.liked,
+            likeCount: response.data.data.totalLikes
+          };
+        }
+        return c;
+      }));
+      
+    } catch (error) {
+      // ✅ Rollback on error: refetch comments
+      try {
+        const res = await axios.get(`${BASE_URL}/comments/video/${videoId}`, { headers });
+        const normalized = (res.data.data || []).map(c => ({
+          ...c,
+          isLiked: c.isLiked || false,
+          likeCount: c.likeCount || 0
+        }));
+        setComments(normalized);
+      } catch (e) {
+        // Silent fail
+      }
       toast.error("Failed to update like");
     }
   }
@@ -249,7 +336,15 @@ export default function VideoPage() {
     try {
       const response = await axios.post(`${BASE_URL}/comments/video/${videoId}`, 
         { content: newComment }, { headers });
-      setComments(prev => [response.data.data, ...prev]);
+      
+      // ✅ Normalize new comment with like info
+      const newCommentObj = {
+        ...response.data.data,
+        isLiked: false,
+        likeCount: 0
+      };
+      
+      setComments(prev => [newCommentObj, ...prev]);
       setNewComment("");
       toast.success("Comment posted! 💬");
     } catch (error) {
@@ -488,8 +583,13 @@ export default function VideoPage() {
                   )}
 
                   {!commentsLoading && comments.map((comment) => (
-                    <CommentItem key={comment._id} comment={comment}
-                                 currentUserId={currentUser?._id} onDelete={handleDeleteComment} />
+                    <CommentItem 
+                      key={comment._id} 
+                      comment={comment}
+                      currentUserId={currentUser?._id} 
+                      onDelete={handleDeleteComment}
+                      onLike={handleLikeComment}  // ✅ Pass like handler
+                    />
                   ))}
                 </div>
               </div>

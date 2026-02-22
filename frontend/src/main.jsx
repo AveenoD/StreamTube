@@ -20,6 +20,7 @@ import PlaylistPage from './pages/PlaylistPage.jsx';
 import PlaylistDetailPage from './pages/PlaylistDetailPage.jsx';
 import TweetsPage from './pages/TweetsPage';
 import SubscribersPage from './pages/SubscribersPage';
+import CommingSoon from './pages/CommingSoon.jsx';
 const router = createBrowserRouter([
   {
     path: '/login',
@@ -74,6 +75,9 @@ const router = createBrowserRouter([
       },
       { 
         path: 'subscribers', element: <SubscribersPage /> 
+      },
+      {
+        path:'commingsoon', element: <CommingSoon />
       }
 
     ]

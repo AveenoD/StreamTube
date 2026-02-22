@@ -7,8 +7,8 @@ import asyncHandler from "../utils/asyncHandler.js"
 
 
 const toggleSubscription = asyncHandler(async (req, res) => {
-    const {channelId} = req.params
-    // TODO: toggle subscription
+    const {channelId} = req.params  // ✅ FIX 1: changed from userId to channelId
+    
     if (!isValidObjectId(channelId)) {
         throw new ApiError(400, "Invalid channel ID")
     }
@@ -18,7 +18,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Channel not found")
     }
 
-     if (channelId.toString() === req.user._id.toString()) {
+    if (channelId.toString() === req.user._id.toString()) {
         throw new ApiError(400, "You cannot subscribe to yourself")
     }
 
@@ -31,12 +31,10 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     let message
 
     if (existingSubscription) {
-        // UNSUBSCRIBE
         await Subscription.deleteOne({ _id: existingSubscription._id })
         isSubscribed = false
         message = "Unsubscribed successfully"
     } else {
-        // SUBSCRIBE
         await Subscription.create({
             subscriber: req.user._id,
             channel: channelId
@@ -60,10 +58,10 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     )
 })
 
-// controller to return subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     const {channelId} = req.params
     const { page = 1, limit = 10 } = req.query
+    
     if (!isValidObjectId(channelId)) {
         throw new ApiError(400, "Invalid channel ID")
     }
@@ -73,29 +71,25 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Channel not found")
     }
 
-      const pageNum = parseInt(page, 10)
+    const pageNum = parseInt(page, 10)
     const limitNum = Math.max(1, Math.min(parseInt(limit, 10), 50))
     const skip = (pageNum - 1) * limitNum
 
     const pipeline = []
 
-    // Match subscriptions for this channel
     pipeline.push({
         $match: {
             channel: new mongoose.Types.ObjectId(channelId)
         }
     })
-      pipeline.push({
+    
+    pipeline.push({
         $sort: { createdAt: -1 }
     })
 
-    // Pagination: skip
     pipeline.push({ $skip: skip })
-
-    // Pagination: limit
     pipeline.push({ $limit: limitNum })
 
-    // Lookup subscriber user data
     pipeline.push({
         $lookup: {
             from: "users",
@@ -105,7 +99,6 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
         }
     })
 
-    // Unwind subscriber info
     pipeline.push({
         $unwind: {
             path: "$subscriberInfo",
@@ -113,7 +106,6 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
         }
     })
 
-    // Project final fields
     pipeline.push({
         $project: {
             _id: 0,
@@ -127,15 +119,16 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
             subscribedAt: "$createdAt"
         }
     })
-     const [subscribers, totalSubscribers] = await Promise.all([
+    
+    const [subscribers, totalSubscribers] = await Promise.all([
         Subscription.aggregate(pipeline),
         Subscription.countDocuments({ channel: channelId })
     ])
 
-     const totalPages = Math.ceil(totalSubscribers / limitNum)
+    const totalPages = Math.ceil(totalSubscribers / limitNum)
     const hasMore = pageNum < totalPages
 
-     return res.status(200).json(
+    return res.status(200).json(
         new ApiResponse(
             200,
             {
@@ -151,11 +144,11 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     )
 })
 
-// controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
     const { subscriberId } = req.params
     const { page = 1, limit = 10 } = req.query
-     if (!isValidObjectId(subscriberId)) {
+    
+    if (!isValidObjectId(subscriberId)) {
         throw new ApiError(400, "Invalid subscriber ID")
     }
 
@@ -175,11 +168,14 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
             subscriber: new mongoose.Types.ObjectId(subscriberId)
         }
     })
-     pipeline.push({
+    
+    pipeline.push({
         $sort: { createdAt: -1 }
     })
+    
     pipeline.push({ $skip: skip })
     pipeline.push({ $limit: limitNum })
+    
     pipeline.push({
         $lookup: {
             from: "users",
@@ -196,7 +192,6 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
         }
     })
 
-    // Project final fields
     pipeline.push({
         $project: {
             _id: 0,
@@ -211,7 +206,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
         }
     })
 
-     const [subscribedChannels, totalSubscriptions] = await Promise.all([
+    const [subscribedChannels, totalSubscriptions] = await Promise.all([
         Subscription.aggregate(pipeline),
         Subscription.countDocuments({ subscriber: subscriberId })
     ])
@@ -233,11 +228,39 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
             "Subscribed channels fetched successfully"
         )
     )
-
 })
 
+// ✅ FIX 2: NEW FUNCTION - Get user's subscribers (simpler for SubscribersPage)
+const getUserSubscribers = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+    
+    if (!isValidObjectId(userId)) {
+        throw new ApiError(400, "Invalid user ID");
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    // Find all subscriptions where this user is the channel
+    const subscribers = await Subscription.find({ channel: userId })
+        .populate("subscriber", "username fullName avatar email")
+        .sort({ createdAt: -1 });
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            subscribers,
+            "Subscribers fetched successfully"
+        )
+    );
+});
+
+// ✅ FIX 3: Export the new function
 export {
     toggleSubscription,
     getUserChannelSubscribers,
-    getSubscribedChannels
+    getSubscribedChannels,
+    getUserSubscribers
 }

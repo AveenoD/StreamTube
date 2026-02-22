@@ -75,7 +75,15 @@ export default function ProfilePage() {
         ]);
         
         setSubscribersCount(channelRes.data.data.subscribersCount || 0);
-        setVideos(videosRes.data.data.videos || []);
+        
+        // ✅ FIX: Normalize views field for videos (API returns 'viewsCount')
+        const fetchedVideos = videosRes.data.data.videos || [];
+        const normalizedVideos = fetchedVideos.map(video => ({
+          ...video,
+          views: video.viewsCount ?? video.views ?? video.viewCount ?? 0
+        }));
+        setVideos(normalizedVideos);
+        
         setTweets(tweetsRes.data.data.tweets || []);
         
       } catch (error) {
@@ -165,15 +173,9 @@ export default function ProfilePage() {
                   <p className="text-sm text-gray-400 font-medium mt-0.5">
                     @{user.username}
                   </p>
+                  
+                  {/* ✅ FIX: Removed subscriber button, kept videos + posts stats */}
                   <div className="flex items-center gap-4 mt-2">
-                    <button
-                      onClick={() => navigate("/subscribers")}
-                      className="flex items-center gap-1.5 text-xs text-gray-500 
-                                 font-medium hover:text-gray-700 transition-colors"
-                    >
-                      <Users size={13} strokeWidth={2} />
-                      {formatCount(subscribersCount)} subscribers
-                    </button>
                     <span className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
                       <PlaySquare size={13} strokeWidth={2} />
                       {videos.length} videos

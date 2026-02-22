@@ -10,7 +10,8 @@ import  {verifyJWT}  from "../middlewares/auth.middleware.js"
 const router = Router()
 
 // Get all comments for a video (with pagination)
-router.get("/video/:videoId", getVideoComments)
+router.get("/video/:videoId", verifyJWT, getVideoComments)
+
 
 // Add a comment to a video
 router.post("/video/:videoId", verifyJWT, addComment)

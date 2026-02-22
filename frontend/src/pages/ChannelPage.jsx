@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useToast } from "../toaster/UseToast.js";
 import VideoCard, { VideoCardSkeleton } from "../components/VideoCard";
-import { Bell, BellOff, PlaySquare, Users, Eye, MessageSquare, Clock, Heart } from "lucide-react";
+import { Bell, BellOff, PlaySquare, Users, MessageSquare, Clock, Heart } from "lucide-react";
 
 const BASE_URL = "http://localhost:5000/api/v1";
 
@@ -34,20 +34,21 @@ export default function ChannelPage() {
   const navigate    = useNavigate();
   const toast       = useToast();
 
-  // ── Your logic (unchanged) ───────────────────────────────
   const [channel, setChannel]     = useState(null);
   const [videos, setVideos]       = useState([]);
   const [tweets, setTweets]       = useState([]);
   const [loading, setLoading]     = useState(false);
-  const [activeTab, setActiveTab] = useState("videos"); // "videos" or "posts"
-
-  // ── Extra states for subscribe (UI only) ─────────────────
+  const [activeTab, setActiveTab] = useState("videos");
   const [subscribed, setSubscribed]   = useState(false);
   const [subLoading, setSubLoading]   = useState(false);
   const [subscribersCount, setSubscribersCount] = useState(0);
 
   const token   = localStorage.getItem("token");
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  
+  // Check if viewing own channel
+  const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+  const isOwnChannel = currentUser?._id === userId;
 
   useEffect(() => {
     if (!userId) return;
@@ -63,7 +64,15 @@ export default function ChannelPage() {
         ]);
 
         setChannel(channelRes.data.data);
-        setVideos(videosRes.data.data.videos || []);
+        
+        // Normalize views field
+        const fetchedVideos = videosRes.data.data.videos || [];
+        const normalizedVideos = fetchedVideos.map(video => ({
+          ...video,
+          views: video.viewsCount ?? video.views ?? 0
+        }));
+        setVideos(normalizedVideos);
+        
         setTweets(tweetsRes.data.data.tweets || []);
         setSubscribed(channelRes.data.data.isSubscribed || false);
         setSubscribersCount(channelRes.data.data.subscribersCount || 0);
@@ -80,7 +89,6 @@ export default function ChannelPage() {
     fetchChannelData();
   }, [userId]);
 
-  // ── Subscribe toggle ─────────────────────────────────────
   async function handleSubscribe() {
     if (!token) {
       toast.warning("Please login to subscribe");
@@ -115,18 +123,58 @@ export default function ChannelPage() {
     }
   }
 
-  // ── UI ────────────────────────────────────────────────────
+  // ✅ ADD: Handle like for tweets on ChannelPage
+  async function handleLike(tweetId) {
+    if (!token) {
+      toast.warning("Please login to like");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      // ✅ Optimistic update (same as TweetsPage)
+      setTweets(prev => prev.map(tweet => {
+        if (tweet._id === tweetId) {
+          const isLiked = tweet.isLiked || false;
+          return {
+            ...tweet,
+            isLiked: !isLiked,
+            likeCount: isLiked ? (tweet.likeCount - 1) : (tweet.likeCount + 1)
+          };
+        }
+        return tweet;
+      }));
+
+      await axios.post(
+        `${BASE_URL}/likes/toggle/tweet/${tweetId}`,
+        {},
+        { headers }
+      );
+
+    } catch (error) {
+      toast.error("Failed to like post");
+      // ✅ Rollback: refetch tweets on error
+      try {
+        const tweetsRes = await axios.get(
+          `${BASE_URL}/tweets/user/${userId}`,
+          { headers }
+        );
+        setTweets(tweetsRes.data.data.tweets || []);
+      } catch (e) {
+        // Silent fail on rollback
+      }
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* ── Loading state ──────────────────────────────── */}
+      {/* Loading state */}
       {loading && (
         <div>
-          {/* Cover skeleton */}
           <div className="w-full h-40 sm:h-52 bg-gray-200 animate-pulse" />
 
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            {/* Avatar + info skeleton */}
             <div className="flex flex-col sm:flex-row items-start
                             sm:items-end gap-4 -mt-10 mb-8">
               <div className="w-24 h-24 rounded-full bg-gray-300
@@ -137,7 +185,6 @@ export default function ChannelPage() {
               </div>
             </div>
 
-            {/* Video grid skeleton */}
             <div className="grid grid-cols-1 sm:grid-cols-2
                             lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {Array.from({ length: 8 }).map((_, i) => (
@@ -148,11 +195,11 @@ export default function ChannelPage() {
         </div>
       )}
 
-      {/* ── Channel content ────────────────────────────── */}
+      {/* Channel content */}
       {!loading && channel && (
         <div>
 
-          {/* ── Cover image ──────────────────────────── */}
+          {/* Cover image */}
           <div className="w-full h-40 sm:h-56 overflow-hidden bg-gradient-to-br
                           from-indigo-400 via-purple-500 to-rose-400">
             {channel.coverImage && (
@@ -164,7 +211,7 @@ export default function ChannelPage() {
             )}
           </div>
 
-          {/* ── Channel info ─────────────────────────── */}
+          {/* Channel info */}
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="flex flex-col sm:flex-row sm:items-end
                             sm:justify-between gap-4 -mt-12 mb-8">
@@ -223,28 +270,30 @@ export default function ChannelPage() {
                 </div>
               </div>
 
-              {/* Subscribe button */}
-              <button
-                onClick={handleSubscribe}
-                disabled={subLoading}
-                className={`
-                  flex items-center gap-2 px-6 py-2.5 rounded-full
-                  text-sm font-bold transition-all duration-200
-                  disabled:opacity-60 disabled:cursor-not-allowed
-                  ${subscribed
-                    ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    : "bg-gray-900 text-white hover:bg-gray-700 shadow-md"
+              {/* Subscribe button (only for other channels) */}
+              {!isOwnChannel && (
+                <button
+                  onClick={handleSubscribe}
+                  disabled={subLoading}
+                  className={`
+                    flex items-center gap-2 px-6 py-2.5 rounded-full
+                    text-sm font-bold transition-all duration-200
+                    disabled:opacity-60 disabled:cursor-not-allowed
+                    ${subscribed
+                      ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      : "bg-gray-900 text-white hover:bg-gray-700 shadow-md"
+                    }
+                  `}
+                >
+                  {subscribed
+                    ? <><BellOff size={15} strokeWidth={2.5} /> Subscribed</>
+                    : <><Bell size={15} strokeWidth={2.5} /> Subscribe</>
                   }
-                `}
-              >
-                {subscribed
-                  ? <><BellOff size={15} strokeWidth={2.5} /> Subscribed</>
-                  : <><Bell size={15} strokeWidth={2.5} /> Subscribe</>
-                }
-              </button>
+                </button>
+              )}
             </div>
 
-            {/* ── Tabs ──────────────────────────────────── */}
+            {/* Tabs */}
             <div className="border-b border-gray-200 mb-6">
               <div className="flex gap-6">
                 <button
@@ -287,10 +336,9 @@ export default function ChannelPage() {
               </div>
             </div>
 
-            {/* ── Videos section ───────────────────── */}
+            {/* Videos section */}
             {activeTab === "videos" && (
               <div className="pb-10">
-                {/* Empty state */}
                 {videos.length === 0 && (
                   <div className="flex flex-col items-center justify-center
                                   py-20 text-center">
@@ -308,7 +356,6 @@ export default function ChannelPage() {
                   </div>
                 )}
 
-                {/* Video grid */}
                 {videos.length > 0 && (
                   <div className="grid grid-cols-1 sm:grid-cols-2
                                   lg:grid-cols-3 xl:grid-cols-4
@@ -321,10 +368,9 @@ export default function ChannelPage() {
               </div>
             )}
 
-            {/* ── Posts section ───────────────────── */}
+            {/* Posts section */}
             {activeTab === "posts" && (
               <div className="pb-10">
-                {/* Empty state */}
                 {tweets.length === 0 && (
                   <div className="flex flex-col items-center justify-center
                                   py-20 text-center">
@@ -342,7 +388,6 @@ export default function ChannelPage() {
                   </div>
                 )}
 
-                {/* Posts list */}
                 {tweets.length > 0 && (
                   <div className="max-w-2xl space-y-4">
                     {tweets.map((tweet) => (
@@ -350,7 +395,6 @@ export default function ChannelPage() {
                            className="bg-white rounded-2xl p-5 shadow-sm
                                       hover:shadow-md transition-shadow">
                         
-                        {/* Header */}
                         <div className="flex items-center gap-3 mb-3">
                           <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                             {tweet.owner?.avatar ? (
@@ -381,19 +425,28 @@ export default function ChannelPage() {
                           </div>
                         </div>
 
-                        {/* Content */}
                         <p className="text-sm text-gray-700 leading-relaxed mb-3 whitespace-pre-wrap">
                           {tweet.content}
                         </p>
 
-                        {/* Footer */}
+                        {/* ✅ FIX: Like button with onClick handler */}
                         <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
-                          <div className="flex items-center gap-1.5 text-gray-400 text-sm">
-                            <Heart size={16} strokeWidth={2} />
+                          <button
+                            onClick={() => handleLike(tweet._id)}
+                            className={`flex items-center gap-1.5 text-sm transition-colors
+                                        ${tweet.isLiked 
+                                          ? "text-rose-500" 
+                                          : "text-gray-400 hover:text-rose-500"}`}
+                          >
+                            <Heart 
+                              size={16} 
+                              strokeWidth={2}
+                              className={tweet.isLiked ? "fill-rose-500" : ""} 
+                            />
                             {tweet.likeCount > 0 && (
                               <span className="font-semibold">{tweet.likeCount}</span>
                             )}
-                          </div>
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -405,7 +458,7 @@ export default function ChannelPage() {
         </div>
       )}
 
-      {/* ── Channel not found ──────────────────────────── */}
+      {/* Channel not found */}
       {!loading && !channel && (
         <div className="flex flex-col items-center justify-center
                         min-h-[60vh] text-center px-4">

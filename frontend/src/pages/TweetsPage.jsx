@@ -140,17 +140,29 @@ export default function TweetsPage() {
 
   async function handleLike(tweetId) {
     try {
+      // Optimistic update
+      setTweets(prev => prev.map(tweet => {
+        if (tweet._id === tweetId) {
+          const isLiked = tweet.isLiked || false;
+          return {
+            ...tweet,
+            isLiked: !isLiked,
+            likeCount: isLiked ? (tweet.likeCount - 1) : (tweet.likeCount + 1)
+          };
+        }
+        return tweet;
+      }));
+
       await axios.post(
         `${BASE_URL}/likes/toggle/tweet/${tweetId}`,
         {},
         { headers }
       );
-      
-      // Refresh tweets to get updated like count
-      fetchTweets();
 
     } catch (error) {
       toast.error("Failed to like tweet");
+      // Rollback on error
+      fetchTweets();
     }
   }
 
@@ -304,10 +316,16 @@ export default function TweetsPage() {
                 <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
                   <button
                     onClick={() => handleLike(tweet._id)}
-                    className="flex items-center gap-1.5 text-gray-400
-                               hover:text-rose-500 transition-colors text-sm"
+                    className={`flex items-center gap-1.5 text-sm transition-colors
+                                ${tweet.isLiked 
+                                  ? "text-rose-500" 
+                                  : "text-gray-400 hover:text-rose-500"}`}
                   >
-                    <Heart size={16} strokeWidth={2} />
+                    <Heart 
+                      size={16} 
+                      strokeWidth={2}
+                      className={tweet.isLiked ? "fill-rose-500" : ""} 
+                    />
                     {tweet.likeCount > 0 && (
                       <span className="font-semibold">{tweet.likeCount}</span>
                     )}

@@ -274,11 +274,19 @@ const getVideoById = asyncHandler(async (req, res) => {
         
         });
     }
+    let inWatchLater = false;
+    if (req.user) {
+        const user = await User.findById(req.user._id).select('watchLater');
+        inWatchLater = user?.watchLater?.some(
+            id => id.toString() === videoId.toString()
+        ) || false;
+    }
     const videoData = {
         ...video.toObject(),
         likeCount,
         commentCount,
         isLiked,
+        inWatchLater: inWatchLater,
         isSubscribed    // ✅ frontend reads this on page load
     }
 
