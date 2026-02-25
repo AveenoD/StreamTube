@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://YOUR-BACKEND-VERCEL-URL/api/$1"
+      "destination": "https://stream-tube-lovat.vercel.app/api/$1"
     },
     {
       "source": "/(.*)",
