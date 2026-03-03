@@ -78,7 +78,7 @@ export default function RegisterPage() {
 
     try {
       const response = await axios.post(
-        process.env.VITE_BACKEND_URL + "/register",
+        import.meta.env.VITE_BACKEND_URL + "/register",
         formData,
         {
           headers: {

@@ -3,7 +3,7 @@ import axios from "axios";
 import { useToast } from "../toaster/UseToast.js";
 import VideoCard, { VideoCardSkeleton } from "../components/VideoCard.jsx";
 
-const BASE_URL = process.env.VITE_BACKEND_URL;
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 // ── Category filter chips ─────────────────────────────
 const CATEGORIES = [

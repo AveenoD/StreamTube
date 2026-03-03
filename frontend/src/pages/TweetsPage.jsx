@@ -7,7 +7,7 @@ import {
   Heart, Clock
 } from 'lucide-react';
 
-const BASE_URL =process.env.VITE_BACKEND_URL;
+const BASE_URL =import.meta.env.VITE_BACKEND_URL;
 
 function timeAgo(date) {
   if (!date) return "";

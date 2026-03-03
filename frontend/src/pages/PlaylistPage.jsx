@@ -7,7 +7,7 @@ import {
     PlaySquare, Lock, Globe
 } from 'lucide-react';
 
-const BASE_URL = process.env.VITE_BACKEND_URL;
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function PlaylistsPage() {
     const toast = useToast();

@@ -10,7 +10,7 @@ import {
   Plus, X, ListVideo
 } from "lucide-react";
 
-const BASE_URL =process.env.VITE_BACKEND_URL;
+const BASE_URL =import.meta.env.VITE_BACKEND_URL;
 
 function formatViews(views) {
   if (!views) return "0";

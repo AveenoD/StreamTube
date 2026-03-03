@@ -5,7 +5,7 @@ import { useToast }            from "../toaster/UseToast.js";
 import VideoCard, { VideoCardSkeleton } from "../components/VideoCard";
 import { Clock, Trash2 }       from "lucide-react";
 
-const BASE_URL = process.env.VITE_BACKEND_URL;
+const BASE_URL =import.meta.env.VITE_BACKEND_URL;
 
 export default function WatchLaterPage() {
   const toast    = useToast();

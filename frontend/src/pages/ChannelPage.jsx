@@ -5,7 +5,7 @@ import { useToast } from "../toaster/UseToast.js";
 import VideoCard, { VideoCardSkeleton } from "../components/VideoCard";
 import { Bell, BellOff, PlaySquare, Users, MessageSquare, Clock, Heart } from "lucide-react";
 
-const BASE_URL =process.env.VITE_BACKEND_URL;
+const BASE_URL =import.meta.env.VITE_BACKEND_URL;
 
 function formatCount(num) {
   if (!num) return "0";
