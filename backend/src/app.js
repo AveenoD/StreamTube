@@ -11,11 +11,23 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
-const corsOrigin = process.env.CORS_ORIGIN || 'https://stream-tube-zo3e.vercel.app';
+const allowedOrigins = [
+    'https://stream-tube-zo3e.vercel.app',
+    process.env.CORS_ORIGIN // This allows you to add more via Vercel dashboard
+];
 
-// CORS Configuration
 app.use(cors({
-    origin: corsOrigin,
+    origin: function (origin, callback ) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        // Check if origin is in our allowed list or is a Vercel preview URL
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
