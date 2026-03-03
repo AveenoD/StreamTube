@@ -7,7 +7,7 @@ import {
   Save, Key, Eye, EyeOff
 } from "lucide-react";
 
-const BASE_URL = "http://localhost:5000/api/v1";
+const BASE_URL =process.env.VITE_BACKEND_URL;
 
 export default function SettingsPage() {
   const toast    = useToast();

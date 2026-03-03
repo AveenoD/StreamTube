@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
-const corsOrigin = process.env.CORS_ORIGIN;
+const corsOrigin = process.env.CORS_ORIGIN || 'https://stream-tube-zo3e.vercel.app';
 
 // CORS Configuration
 app.use(cors({

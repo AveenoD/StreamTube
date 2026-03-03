@@ -23,7 +23,7 @@ import {
   MessageSquare
 } from "lucide-react";
 
-const BASE_URL = "http://localhost:5000/api/v1";
+const BASE_URL = process.env.VITE_BACKEND_URL;
 
 // ── Reusable NavItem ──────────────────────────────────────────
 function NavItem({ to, icon: Icon, label, isActive, onClick, badge }) {

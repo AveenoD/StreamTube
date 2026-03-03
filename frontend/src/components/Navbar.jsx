@@ -14,7 +14,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-const BASE_URL = "http://localhost:5000/api/v1";
+const BASE_URL =process.env.VITE_BACKEND_URL;
 
 export default function Navbar({ onMenuClick }) {
   const navigate                      = useNavigate();

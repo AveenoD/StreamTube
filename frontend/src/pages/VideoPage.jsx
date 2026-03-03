@@ -10,7 +10,7 @@ import {
   Plus, X, ListVideo
 } from "lucide-react";
 
-const BASE_URL = "http://localhost:5000/api/v1";
+const BASE_URL =process.env.VITE_BACKEND_URL;
 
 function formatViews(views) {
   if (!views) return "0";
