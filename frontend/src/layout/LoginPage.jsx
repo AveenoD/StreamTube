@@ -12,7 +12,7 @@ export default function LoginPage() {
     const toast = useToast();
     const [loading, setLoading] = useState(false);
     
-    const baseURL = `${import.meta.env.VITE_BACKEND_URL}/api/v1/users`;
+    const baseURL = `${import.meta.env.VITE_BACKEND_URL}/users`;
     const handleLogin = async (e) => {
         e.preventDefault()
         setLoading(true)
