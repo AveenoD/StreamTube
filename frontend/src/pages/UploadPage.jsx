@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useToast } from "../toaster/UseToast.js";
 import {
-<<<<<<< HEAD
     ArrowLeft, 
     Film, 
     Upload, 
@@ -15,21 +14,6 @@ import {
     Loader2} from 'lucide-react'
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;;
 
-=======
-  ArrowLeft,
-  Film,
-  Upload,
-  CheckCircle2,
-  X,
-  Image,
-  AlignLeft,
-  Type,
-  Loader2
-} from 'lucide-react'
-const BASE_URL = import.meta.env.VITE_BACKEND_URL;
-const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
->>>>>>> cd2302c9b838a3dec4c73234037f4fa9ea374330
 function UploadPage() {
   const toast = useToast();
   const navigate = useNavigate();

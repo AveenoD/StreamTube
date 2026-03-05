@@ -12,11 +12,7 @@ export default function LoginPage() {
     const toast = useToast();
     const [loading, setLoading] = useState(false);
     
-<<<<<<< HEAD
     const baseURL = import.meta.env.VITE_BACKEND_URL;
-=======
-    const baseURL = `${import.meta.env.VITE_BACKEND_URL}`;
->>>>>>> cd2302c9b838a3dec4c73234037f4fa9ea374330
     const handleLogin = async (e) => {
         e.preventDefault()
         setLoading(true)
