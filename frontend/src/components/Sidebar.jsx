@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
+const toast = useToast();
 // ── Reusable NavItem ──────────────────────────────────────────
 function NavItem({ to, icon: Icon, label, isActive, onClick, badge }) {
   const base = `
@@ -33,7 +33,7 @@ function NavItem({ to, icon: Icon, label, isActive, onClick, badge }) {
   `;
   const active = "bg-rose-50 text-rose-600 font-semibold";
   const inactive = "text-gray-600 hover:bg-gray-100 hover:text-gray-900";
-  const toast = useToast();
+  
   const content = (
     <>
       <Icon
