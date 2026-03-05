@@ -25,8 +25,6 @@ import {
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
-// ❌ REMOVED: const toast = useToast(); was here at module level — THIS was causing the crash
-
 // ── Reusable NavItem ──────────────────────────────────────────
 function NavItem({ to, icon: Icon, label, isActive, onClick, badge }) {
   const base = `
@@ -35,7 +33,7 @@ function NavItem({ to, icon: Icon, label, isActive, onClick, badge }) {
   `;
   const active = "bg-rose-50 text-rose-600 font-semibold";
   const inactive = "text-gray-600 hover:bg-gray-100 hover:text-gray-900";
-  
+
   const content = (
     <>
       <Icon
@@ -106,20 +104,19 @@ function UserFooterSkeleton() {
 }
 
 // ── Main Sidebar ──────────────────────────────────────────────
-export default function Sidebar({ isOpen, onClose }) {
+export default function Sidebar({ isOpen, onClose }) {   // ✅ named function
   const location = useLocation();
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
   const pathname = location.pathname;
-  const toast = useToast(); // ✅ FIXED: moved inside the component
+    const toast = useToast();
 
   // ── States ───────────────────────────────────────────────
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null);       // ✅ null default
   const [userLoading, setUserLoading] = useState(true);
   const [channels, setChannels] = useState([]);
   const [channelsLoading, setChannelsLoading] = useState(true);
   const [watchLaterCount, setWatchLaterCount] = useState(0);
-
   // ── Fetch current user from API ──────────────────────────
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -137,6 +134,7 @@ export default function Sidebar({ isOpen, onClose }) {
       .then((res) => {
         const currentUser = res.data.data;
 
+        // ✅ Guard — only proceed if user exists and has _id
         if (!currentUser || !currentUser._id) {
           setChannelsLoading(false);
           return;
@@ -144,16 +142,19 @@ export default function Sidebar({ isOpen, onClose }) {
 
         setUser(currentUser);
 
+        // ✅ Safe now — _id is confirmed to exist
         return axios.get(
           `${BASE_URL}/subscriptions/user/${currentUser._id}/subscribed-channels`,
           { headers }
         );
       })
       .then((res) => {
+        // ✅ Guard — only set if response exists
         if (!res) return;
         const subscribedChannels = res.data.data.subscribedChannels || [];
         const flatChannels = subscribedChannels.map(item => item.channel);
         setChannels(flatChannels);
+
       })
       .catch((err) => {
         toast.error("Failed to load user data");
@@ -167,7 +168,7 @@ export default function Sidebar({ isOpen, onClose }) {
         setChannelsLoading(false);
       });
 
-  }, []);
+  }, []); // runs once on mount
 
   // ── Close on outside click (mobile) ─────────────────────
   useEffect(() => {
@@ -271,7 +272,7 @@ export default function Sidebar({ isOpen, onClose }) {
               icon={Clock}
               label="Watch Later"
               isActive={pathname === "/watchlater"}
-              badge={watchLaterCount > 0 ? watchLaterCount : undefined}
+              badge={watchLaterCount > 0 ? watchLaterCount : undefined}  // ✅ dynamic
             />
             <NavItem
               to="/posts"
@@ -288,6 +289,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <SectionDivider label="Subscriptions" />
           <div className="space-y-0.5">
 
+            {/* Loading skeletons */}
             {channelsLoading && (
               <>
                 <ChannelSkeleton />
@@ -296,12 +298,14 @@ export default function Sidebar({ isOpen, onClose }) {
               </>
             )}
 
+            {/* Empty state */}
             {!channelsLoading && channels.length === 0 && (
               <p className="px-3 py-2 text-xs text-gray-300 italic">
                 No subscriptions yet
               </p>
             )}
 
+            {/* Real channels from API */}
             {!channelsLoading && channels.map((channel) => (
               <Link
                 key={channel._id || channel.id}
@@ -326,6 +330,7 @@ export default function Sidebar({ isOpen, onClose }) {
                       </div>
                     )}
                   </div>
+                  {/* Live dot */}
                   {channel.isLive && (
                     <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5
                                      bg-red-500 rounded-full border-2 border-white" />
@@ -346,6 +351,7 @@ export default function Sidebar({ isOpen, onClose }) {
               </Link>
             ))}
 
+            {/* Show all link */}
             <Link
               to="/subscribers"
               className="flex items-center gap-3 px-3 py-2 rounded-xl
@@ -389,8 +395,10 @@ export default function Sidebar({ isOpen, onClose }) {
         {/* ── User profile footer ──────────────────────── */}
         <div className="flex-shrink-0 border-t border-gray-100 px-3 py-3">
 
+          {/* Skeleton while loading */}
           {userLoading && <UserFooterSkeleton />}
 
+          {/* Real user */}
           {!userLoading && user && (
             <Link
               to="/profile"
@@ -426,6 +434,7 @@ export default function Sidebar({ isOpen, onClose }) {
             </Link>
           )}
 
+          {/* No user / not logged in */}
           {!userLoading && !user && (
             <Link
               to="/login"

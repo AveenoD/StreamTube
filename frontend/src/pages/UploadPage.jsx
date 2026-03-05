@@ -86,7 +86,7 @@ function UploadPage() {
       // 2. Upload Thumbnail to Cloudinary
       const thumbData = new FormData();
       thumbData.append("file", thumbnailRef.current.files[0]);
-      thumbData.append("upload_preset", "your_unsigned_preset");
+      thumbData.append("upload_preset", uploadPreset); // Use the unsigned preset!
 
       const thumbRes = await axios.post(
         `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
