@@ -12,7 +12,7 @@ const __dirname = dirname(__filename);
 const app = express();
 
 const allowedOrigins = [
-    'https://stream-tube-zo3e.vercel.app',
+    'https://comforting-pudding-d15fd5.netlify.app',
     process.env.CORS_ORIGIN // This allows you to add more via Vercel dashboard
 ];
 
