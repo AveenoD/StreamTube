@@ -70,13 +70,27 @@ const getUserTweets = asyncHandler(async (req, res) => {
         })
     )
     
-    const tweetsWithLikes = tweets.map(tweet => {
-        const likeInfo = likeCounts.find(l => l.tweetId.toString() === tweet._id.toString())
-        return {
-            ...tweet,
-            likeCount: likeInfo?.count || 0
-        }
-    })
+    const tweetsWithLikes = await Promise.all(
+        tweets.map(async (tweet) => {
+            const likeCount = await Like.countDocuments({ tweet: tweet._id });
+            
+            // ✅ Check if CURRENT USER liked this specific tweet
+            let isLiked = false;
+            if (req.user) {
+                const likeExists = await Like.exists({ 
+                    tweet: tweet._id, 
+                    likedBy: req.user._id 
+                });
+                isLiked = !!likeExists;
+            }
+
+            return {
+                ...tweet,
+                likeCount,
+                isLiked  // ✅ THIS is the missing field!
+            };
+        })
+    );
 
     const totalPages = Math.ceil(totalTweets / limitNum)
     const hasMore = pageNum < totalPages

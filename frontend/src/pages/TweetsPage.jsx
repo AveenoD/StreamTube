@@ -7,7 +7,7 @@ import {
   Heart, Clock
 } from 'lucide-react';
 
-const BASE_URL = 'http://localhost:5000/api/v1';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;;
 
 function timeAgo(date) {
   if (!date) return "";
@@ -55,7 +55,17 @@ export default function TweetsPage() {
         `${BASE_URL}/tweets/user/${currentUser._id}`,
         { headers }
       );
-      setTweets(response.data.data.tweets || []);
+      
+      const fetchedTweets = response.data.data.tweets || [];
+      
+      // ✅ Normalize tweets to ensure isLiked and likeCount exist
+      const normalizedTweets = fetchedTweets.map(tweet => ({
+        ...tweet,
+        isLiked: tweet.isLiked || false,  // Default to false if not provided
+        likeCount: tweet.likeCount || 0   // Default to 0 if not provided
+      }));
+      
+      setTweets(normalizedTweets);
     } catch (error) {
       toast.error("Failed to load tweets");
     } finally {

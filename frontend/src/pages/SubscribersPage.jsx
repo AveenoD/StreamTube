@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useToast } from '../toaster/UseToast.js';
 import { Users, ArrowLeft, UserCheck } from 'lucide-react';
 
-const BASE_URL = 'http://localhost:5000/api/v1';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;;
 
 function formatCount(num) {
   if (!num) return "0";
