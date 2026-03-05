@@ -13,7 +13,8 @@ import {
     Type, 
     Loader2} from 'lucide-react'
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;;
-
+const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 function UploadPage() {
   const toast = useToast();
   const navigate = useNavigate();
