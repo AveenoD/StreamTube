@@ -89,7 +89,8 @@ export default function RegisterPage() {
 
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
-      navigate("/");
+      toast.success("Registration successful! Welcome aboard.");
+      navigate("/home");
 
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed. Please try again.");
