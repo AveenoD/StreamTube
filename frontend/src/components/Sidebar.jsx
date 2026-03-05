@@ -23,7 +23,7 @@ import {
   MessageSquare
 } from "lucide-react";
 
-const BASE_URL = "http://localhost:5000/api/v1" || import.meta.env.VITE_API_URL;  
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 // ── Reusable NavItem ──────────────────────────────────────────
 function NavItem({ to, icon: Icon, label, isActive, onClick, badge }) {
@@ -33,7 +33,7 @@ function NavItem({ to, icon: Icon, label, isActive, onClick, badge }) {
   `;
   const active = "bg-rose-50 text-rose-600 font-semibold";
   const inactive = "text-gray-600 hover:bg-gray-100 hover:text-gray-900";
-  const toast = useToast();
+
   const content = (
     <>
       <Icon
@@ -109,6 +109,7 @@ export default function Sidebar({ isOpen, onClose }) {   // ✅ named function
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
   const pathname = location.pathname;
+    const toast = useToast();
 
   // ── States ───────────────────────────────────────────────
   const [user, setUser] = useState(null);       // ✅ null default

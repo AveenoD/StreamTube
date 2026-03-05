@@ -5,7 +5,11 @@ import { useToast } from "../toaster/UseToast.js";
 import VideoCard, { VideoCardSkeleton } from "../components/VideoCard";
 import { ThumbsUp } from "lucide-react";
 
+<<<<<<< HEAD
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;;
+=======
+const BASE_URL =import.meta.env.VITE_BACKEND_URL;
+>>>>>>> cd2302c9b838a3dec4c73234037f4fa9ea374330
 
 export default function LikedVideosPage() {
   const toast = useToast();

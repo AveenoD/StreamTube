@@ -8,7 +8,11 @@ import {
   MessageSquare, Clock, Heart, Trash2, Edit2
 } from "lucide-react";
 
+<<<<<<< HEAD
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;;
+=======
+const BASE_URL =import.meta.env.VITE_BACKEND_URL;
+>>>>>>> cd2302c9b838a3dec4c73234037f4fa9ea374330
 
 function formatCount(num) {
   if (!num) return "0";

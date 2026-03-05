@@ -1,25 +1,13 @@
 import multer from "multer";
+import os from "os";
 import path from "path";
-import { fileURLToPath } from 'url';
-import fs from 'fs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-
-const tempDir = path.join(__dirname, '../../public/temp');
-
-
-if (!fs.existsSync(tempDir)) {
-    fs.mkdirSync(tempDir, { recursive: true });
-    console.log('✅ Created directory:', tempDir);
-}
-
+// Use the system's temp directory - ONLY writable place on Vercel
 const storage = multer.diskStorage({
-    destination: function(req, file, cb){
-        cb(null, tempDir);
+    destination: function (req, file, cb) {
+        cb(null, os.tmpdir());
     },
-    filename: function (req, file, cb){
+    filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
     }
@@ -27,7 +15,5 @@ const storage = multer.diskStorage({
 
 export const upload = multer({ 
     storage: storage,
-    limits: {
-        fileSize: 100 * 1024 * 1024 
-    }
+    limits: { fileSize: 100 * 1024 * 1024 }
 });

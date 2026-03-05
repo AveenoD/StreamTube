@@ -1,18 +1,28 @@
 import mongoose from "mongoose";
 import { DB_NAME } from "../constants.js";
-const connectDB = async () =>{
-    try {
-        await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`);
-        console.log('⚙ MongoDB connected successfully');
-        console.log("✅ Connected to DB:", mongoose.connection.name);
-    } catch (error) {
-        console.log('Error: MongoDB connection failed: ',error);
-        
+
+let isConnected = false; // Cache the connection
+
+const connectDB = async () => {
+    // Disable buffering so it throws an error immediately if not connected
+    // instead of waiting 10 seconds and timing out.
+    mongoose.set('bufferCommands', false); 
+
+    if (isConnected) {
+        return;
     }
-    mongoose.connection.once("open", async () => {
-  console.log("📦 Collection:", User.collection.name);
-  console.log("📊 Count:", await User.countDocuments());
-});
-}
+
+    try {
+        const connectionInstance = await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`, {
+            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 10s
+        });
+        
+        isConnected = !!connectionInstance.connections[0].readyState;
+        console.log(`✅ MongoDB connected: ${connectionInstance.connection.host}`);
+    } catch (error) {
+        console.error("❌ MongoDB connection FAILED: ", error);
+        throw error;
+    }
+};
 
 export default connectDB;
